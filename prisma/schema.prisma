@@ -1,0 +1,60 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model Job {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    
+    references Reference[]
+    features Feature[]
+
+    @@index([id])
+}
+
+model Reference {
+    id Int @id @default(autoincrement())
+    
+    title String
+    jobId Int
+    job Job @relation(fields: [jobId],references: [id])
+    pages Page[]
+}
+
+model Page {
+    id Int @id @default(autoincrement())
+    refId Int
+    reference Reference @relation(fields: [refId],references: [id])
+    pageNum Int
+    content String
+
+}
+
+model Feature {
+    id Int @id @default(autoincrement())
+    
+    jobId Int
+    job Job @relation(fields: [jobId],references: [id])
+    analysis Analysis[] 
+    
+    feature String
+    
+}
+model Analysis {
+    id Int @id @default(autoincrement())
+    
+    featureId Int
+    feature Feature @relation(fields: [featureId],references: [id])
+    
+    conclusion String
+    quote String
+    refPage Int
+    refId Int
+    refTitle String
+}
