@@ -6,10 +6,22 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 export const jobRouter = createTRPCRouter({
   getAllJobs: publicProcedure.query(({ ctx }) => {
     return ctx.db.job.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
   }),
 
+  deleteJob: publicProcedure
+    .input(
+      z.object({
+        jobId: z.number(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      const jobId = input.jobId;
+      return ctx.db.job.delete({
+        where: { id: jobId },
+      });
+    }),
   getJob: publicProcedure
     .input(
       z.object({
@@ -70,15 +82,21 @@ export const jobRouter = createTRPCRouter({
                 content: message,
               },
             ],
-            //jmode: "chat",
-            //instruction_template: "Mistral",
-            //character: "Example",
           }),
         });
-        const content = await response.json();
+        interface ApiResponse {
+          choices: Array<{
+            message: {
+              content: string;
+            };
+          }>;
+        }
+        const content = (await response.json()) as ApiResponse;
         console.log(content);
-        console.log(content.choices[0].message.content);
-        return content.choices[0].message.content;
+        if (content && content.choices.length > 0) {
+          return content.choices[0]!.message.content;
+        }
+        return "zzz";
       }
 
       const feature = await ctx.db.feature.create({
@@ -91,27 +109,25 @@ export const jobRouter = createTRPCRouter({
       const results = [];
       for (const ref of input.references) {
         for (const page of ref.pages) {
-          const message = `You are a stellar patent attorney. Analyze whether the following text discloses or suggests a given feature. Be conservative, you are essentially flagging text for attorney review.
+          const message = `You are a stellar patent attorney. Analyze whether the following text discloses or suggests a given feature. Be conservative, if something is borderline, answer yes. you are flagging text for attorney review.
             INSTRUCTIONS: return an answer, yes or no, in <answer></answer> tags.
             If the answer is yes, also include a short quote in <quote></quote> tags
             -------------------
           TEXT: ${page.content}
-          --------------------
+          -------------------------------------
           FEATURE: ${input.feature}
-          --------------------
+          -------------------------------------
           Is the feature disclosed or suggested by the above text? 
           `;
           const pageAnalysis = await getCompletion(message);
           let answer = "";
-          const answerMatch = pageAnalysis.match(/<answer>(.*?)<\/answer>/s);
-          if (answerMatch) {
-            answer = answerMatch[1].trim();
-          }
+          const answerRegex = /<answer>(.*?)<\/answer>/s;
+          const answerMatch = answerRegex.exec(pageAnalysis);
+          answer = answerMatch?.[1]?.trim() ?? "";
           let quote = "";
-          const quoteMatch = pageAnalysis.match(/<quote>(.*?)<\/quote>/s);
-          if (quoteMatch) {
-            quote = quoteMatch[1].trim();
-          }
+          const quoteRegex = /<quote>(.*?)<\/quote>/s;
+          const quoteMatch = quoteRegex.exec(pageAnalysis);
+          quote = quoteMatch?.[1]?.trim() ?? "";
 
           if (answer.toLowerCase() === "yes") {
             const loggedAnalysis = await ctx.db.analysis.create({
@@ -127,7 +143,6 @@ export const jobRouter = createTRPCRouter({
             results.push(loggedAnalysis);
           }
         }
-        //return results;
         return ctx.db.job.findFirst({
           where: { id: parseInt(input.jobId, 10) },
           include: {

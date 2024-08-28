@@ -12,7 +12,7 @@ model Job {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     
-    references Reference[]
+    references Reference[] 
     features Feature[]
 
     @@index([id])
@@ -23,14 +23,14 @@ model Reference {
     
     title String
     jobId Int
-    job Job @relation(fields: [jobId],references: [id])
+    job Job @relation(fields: [jobId],references: [id], onDelete: Cascade)
     pages Page[]
 }
 
 model Page {
     id Int @id @default(autoincrement())
     refId Int
-    reference Reference @relation(fields: [refId],references: [id])
+    reference Reference @relation(fields: [refId],references: [id], onDelete: Cascade)
     pageNum Int
     content String
 
@@ -40,7 +40,7 @@ model Feature {
     id Int @id @default(autoincrement())
     
     jobId Int
-    job Job @relation(fields: [jobId],references: [id])
+    job Job @relation(fields: [jobId],references: [id], onDelete: Cascade)
     analysis Analysis[] 
     
     feature String
@@ -50,7 +50,7 @@ model Analysis {
     id Int @id @default(autoincrement())
     
     featureId Int
-    feature Feature @relation(fields: [featureId],references: [id])
+    feature Feature @relation(fields: [featureId],references: [id], onDelete: Cascade)
     
     conclusion String
     quote String

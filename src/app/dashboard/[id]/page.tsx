@@ -1,10 +1,8 @@
 "use client";
 import { Input } from "~/components/ui/input";
-import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Reference, Page, Feature, Analysis } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { ModeToggle } from "~/app/_components/themetoggle";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -12,6 +10,23 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { Search } from "lucide-react";
 import { LoadingSpinner } from "~/app/_components/loader";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/components/ui/hover-card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 export default function JobDisplay({ params }: { params: { id: string } }) {
   const queryClient = useQueryClient();
@@ -25,36 +40,29 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
   >([]);
 
   useEffect(() => {
-    console.log(searchRefs);
-  }, [searchRefs, setSearchRefs]);
+    setSearchRefs(job?.references ?? []);
+  }, []);
 
   function toggleAll() {
     if (job && job.references.length === searchRefs.length) {
-      // All are selected, so uncheck all
       setSearchRefs([]);
     } else {
-      // Not all are selected, so check all
       if (job) {
         setSearchRefs(job.references);
       }
     }
   }
-  useEffect(() => {
-    console.log("Job data changed:", job);
-  }, [job]);
 
   const { mutate: analyze } = api.job.analyzeFeature.useMutation({
     onSuccess: async (result) => {
       setIsLoading(false);
-      console.log(result);
 
       if (result && result.features && result.features.length > 0) {
         const latestFeature = result.features[result.features.length - 1];
         setFeature(latestFeature);
-        console.log("Setting latest feature:", latestFeature);
       }
 
-      queryClient.invalidateQueries();
+      await queryClient.invalidateQueries();
       await refetch();
     },
     onError: (error) => setIsLoading(false),
@@ -77,25 +85,68 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
 
   const [feature, setFeature] = useState<Feature & { analysis: Analysis[] }>();
 
+  const router = useRouter();
+  const { mutate: deleteJob } = api.job.deleteJob.useMutation({
+    onSuccess: () => router.push("/dashboard"),
+  });
+
   return (
-    <div className="flex h-[calc(100vh-108px)] w-full flex-row">
+    <div className="flex h-[calc(100vh-108px)] w-full flex-row justify-center">
       {/* Left sidebar for feature history */}
-      <div className="flex h-full w-32 flex-col gap-y-1 text-ellipsis">
-        <div className="text-center">Features</div>
-        {job?.features.map((item, index) => (
-          <div
-            key={`analysis-${index}`}
-            className="flex items-start justify-start text-left"
-          >
-            <Button
-              variant={"ghost"}
-              className="flex w-full justify-start text-left"
-              onClick={() => setFeature(job.features[index])}
+      <div className="flex h-full w-48 flex-col justify-between gap-y-1 text-ellipsis">
+        <div>
+          <div className="text-center">History</div>
+          {job?.features.map((item, index) => (
+            <div
+              key={`analysis-${index}`}
+              className="flex items-start justify-start text-left"
             >
-              <span className="truncate">{item.feature}</span>
-            </Button>
-          </div>
-        ))}
+              <HoverCard openDelay={200} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                  <div className="truncate">
+                    <Button
+                      variant={"ghost"}
+                      className="max-w-full"
+                      onClick={() => setFeature(job.features[index])}
+                    >
+                      <span className="truncate">{item.feature}</span>
+                    </Button>
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent>{item.feature}</HoverCardContent>
+              </HoverCard>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center">
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Button variant={"destructive"}>Delete Job</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  analysis and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (job) {
+                      setIsLoading(true);
+                      deleteJob({ jobId: job.id });
+                    }
+                  }}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {/* Main Display */}
@@ -122,10 +173,12 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
         {isLoading && <LoadingSpinner />}
         <div className="flex w-full flex-col items-center justify-center">
           {/* Reference toggle */}
-          <Button onClick={toggleAll}>Toggle All</Button>
           <div className="grid w-full grid-cols-2">
             {job?.references.map((ref, index) => (
-              <div className="flex flex-row items-center gap-x-2" key={index}>
+              <div
+                className="flex flex-row items-center justify-center gap-x-2"
+                key={index}
+              >
                 <Checkbox
                   id={`ref-${index}`}
                   className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
@@ -152,17 +205,37 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
             ))}
           </div>
           {/* Search Bar */}
-          <div className="flex w-full max-w-xl flex-row items-center justify-center gap-x-4">
+          <div className="flex w-full max-w-3xl flex-row items-center justify-center gap-x-4 pt-2">
+            <Button onClick={toggleAll}>Toggle All Refs</Button>
             <Input
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search references for feature"
+              placeholder="Enter a feature to search for"
             />
-            <Button
-              onClick={handleAnalyzeFeature}
-              disabled={searchRefs.length === 0 || query.length === 0}
-            >
-              <Search />
-            </Button>
+            {searchRefs.length === 0 || query.length === 0 ? (
+              <HoverCard>
+                <HoverCardTrigger>
+                  <Button
+                    onClick={handleAnalyzeFeature}
+                    disabled={searchRefs.length === 0 || query.length === 0}
+                  >
+                    <Search />
+                  </Button>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  {searchRefs.length === 0 && (
+                    <div>Select at least one reference</div>
+                  )}
+                  {query.length === 0 && <div>Enter an inventive feature</div>}
+                </HoverCardContent>
+              </HoverCard>
+            ) : (
+              <Button
+                onClick={handleAnalyzeFeature}
+                disabled={searchRefs.length === 0 || query.length === 0}
+              >
+                <Search />
+              </Button>
+            )}
           </div>
         </div>
       </div>

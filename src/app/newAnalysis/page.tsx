@@ -13,7 +13,6 @@ import { Cloud, Delete } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { pdfjs } from "react-pdf";
 //import "pdfjs-dist/webpack";
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs`;
 
 interface Reference {
   title: string;
@@ -24,6 +23,10 @@ export default function Page() {
     if (acceptedFiles && acceptedFiles.length > 0) {
       setFiles((prev) => [...prev, ...acceptedFiles]);
     }
+  }, []);
+
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
   }, []);
 
   const [files, setFiles] = useState<File[]>([]);
@@ -68,7 +71,7 @@ export default function Page() {
         console.error(error);
       }
     }
-    processFiles();
+    void processFiles();
   }, [files, setFiles]);
 
   useEffect(() => {
@@ -87,9 +90,11 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-start">
-      <div className="container flex max-w-2xl flex-col items-center gap-8 px-4 py-16">
+    <div className="flex min-h-screen w-full flex-col items-center justify-start">
+      <div className="container flex w-full flex-col items-center gap-4 px-4">
         <h1 className="text-3xl font-extrabold tracking-tight">NEW ANALYSIS</h1>
+        <h1 className="text-2xl tracking-tight">Upload All References</h1>
+        <h1 className="tracking-tight">As PDFs with recognized text</h1>
         <Dropzone
           multiple={true}
           onDrop={(acceptedFiles) => {
@@ -99,7 +104,7 @@ export default function Page() {
           }}
         >
           {({ getRootProps, getInputProps, acceptedFiles }) => (
-            <div className="m-4 h-48 w-full rounded-[var(--radius)] border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--border))]">
+            <div className="m-4 h-48 w-1/2 rounded-[var(--radius)] border border-dashed border-[hsl(var(--foreground))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--border))]">
               <div
                 {...getRootProps()}
                 className="flex h-full w-full items-center justify-center"
@@ -129,6 +134,13 @@ export default function Page() {
             </div>
           )}
         </Dropzone>
+        {files.length > 0 && (
+          <div>
+            <Button disabled={refs.length === 0} onClick={handleMakeAnalysis}>
+              Create Analysis
+            </Button>
+          </div>
+        )}
         <div>
           {files.map((file, index) => (
             <div
@@ -150,19 +162,7 @@ export default function Page() {
             </div>
           ))}
         </div>
-        {files.length > 0 && (
-          <div>
-            <Button disabled={refs.length === 0} onClick={handleMakeAnalysis}>
-              Create Analysis
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
 }
-
-interface RefDisplayProps {
-  file: File;
-}
-function RefDisplay({ file }: RefDisplayProps) {}

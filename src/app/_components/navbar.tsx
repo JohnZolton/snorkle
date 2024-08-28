@@ -17,16 +17,24 @@ export function NavBar() {
   const { setTheme } = useTheme();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-row items-center justify-center gap-x-10 px-10 py-4">
-      <Link
-        href={"/newAnalysis"}
-        className={buttonVariants({ variant: "link" })}
-      >
-        New Analysis
+    <div className="mx-auto flex w-full flex-row items-center justify-between gap-x-10 px-10 py-4">
+      <Link href={"/"} className="text-xl font-semibold">
+        Patense.ai
       </Link>
-      <Link className={buttonVariants({ variant: "link" })} href={"dashboard"}>
-        All Analyses
-      </Link>
+      <div className="max-w-1/2 flex flex-row">
+        <Link
+          href={"/newAnalysis"}
+          className={buttonVariants({ variant: "link" })}
+        >
+          New Analysis
+        </Link>
+        <Link
+          className={buttonVariants({ variant: "link" })}
+          href={"/dashboard"}
+        >
+          All Analyses
+        </Link>
+      </div>
       <ModeToggle />
     </div>
   );
