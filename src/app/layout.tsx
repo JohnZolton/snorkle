@@ -6,8 +6,8 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
-  title: "Patense Local",
-  description: "100% Local AI Reference Analysis",
+  title: "Snorkle",
+  description: "100% Local AI Document Search",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -23,7 +23,7 @@ export default function RootLayout({
           disableTransitionOnChange
           attribute="class"
         >
-          <main className="flex min-h-screen flex-col items-center">
+          <main className="flex max-h-screen flex-col items-center">
             <NavBar />
 
             <TRPCReactProvider>{children}</TRPCReactProvider>

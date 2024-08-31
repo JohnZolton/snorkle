@@ -27,6 +27,15 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { FileText } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 
 export default function JobDisplay({ params }: { params: { id: string } }) {
   const queryClient = useQueryClient();
@@ -53,7 +62,7 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
     }
   }
 
-  const { mutate: analyze } = api.job.analyzeFeature.useMutation({
+  const { mutate: analyze } = api.job.deepSearch.useMutation({
     onSuccess: async (result) => {
       setIsLoading(false);
 
@@ -91,9 +100,9 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
   });
 
   return (
-    <div className="flex h-[calc(100vh-108px)] w-full flex-row justify-center">
+    <div className="flex h-[calc(100vh-96px)] w-full flex-row justify-start">
       {/* Left sidebar for feature history */}
-      <div className="flex h-full w-48 flex-col justify-between gap-y-1 text-ellipsis">
+      <div className="flex h-[calc(100vh-96px)] w-48 flex-col justify-between gap-y-1 text-ellipsis">
         <div>
           <div className="text-center">History</div>
           {job?.features.map((item, index) => (
@@ -121,14 +130,14 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
         <div className="flex items-center justify-center">
           <AlertDialog>
             <AlertDialogTrigger>
-              <Button variant={"destructive"}>Delete Job</Button>
+              <Button variant={"destructive"}>Delete Collection</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the
-                  analysis and all associated data.
+                  collection and all associated data.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -150,20 +159,46 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
       </div>
 
       {/* Main Display */}
-      <div className="flex h-full w-full max-w-4xl flex-col items-center justify-between px-4">
+      <div className="mx-auto flex h-full w-full max-w-4xl flex-col items-center justify-between px-4">
         {/* Analysis Display */}
         {!isLoading && (
-          <div className="flex flex-col items-center">
-            <div className="text-xl font-bold">{feature?.feature}</div>
-            <ScrollArea>
+          <div className="flex h-5/6 flex-col items-center">
+            <div className="text-2xl font-bold">{feature?.feature}</div>
+            <ScrollArea className="w-full rounded-md p-4">
               {feature?.analysis.map((item, index) => (
                 <div
                   key={`analysis-display-${index}`}
-                  className="my-2 flex flex-col items-center justify-center gap-y-2 rounded-md border border-border bg-accent p-2 shadow-sm"
+                  className="my-2 flex flex-row items-center justify-between rounded-md border border-border bg-accent p-2 shadow-sm"
                 >
-                  <div>{item.quote}</div>
-                  <div className="text-xs">
-                    {item.refTitle} - page {item.refPage}
+                  <div className="flex flex-col items-start justify-start gap-y-2">
+                    <div>{item.quote}</div>
+                    <div className="text-xs">
+                      {item.refTitle} - page {item.refPage}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <Dialog>
+                      <DialogTrigger>
+                        <HoverCard>
+                          <HoverCardTrigger>
+                            <FileText />
+                          </HoverCardTrigger>
+                          <HoverCardContent>Show Context</HoverCardContent>
+                        </HoverCard>
+                      </DialogTrigger>
+                      <DialogContent className="max-h-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>
+                            {item.refTitle} - page {item.refPage}
+                          </DialogTitle>
+                          <DialogDescription>
+                            <ScrollArea className="mt-2 h-full max-h-[300px] px-4">
+                              {item.refContent}
+                            </ScrollArea>
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               ))}
@@ -171,45 +206,47 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
           </div>
         )}
         {isLoading && <LoadingSpinner />}
-        <div className="flex w-full flex-col items-center justify-center">
+        <div className="flex h-1/6 w-full flex-col items-center justify-end">
           {/* Reference toggle */}
-          <div className="grid w-full grid-cols-2">
-            {job?.references.map((ref, index) => (
-              <div
-                className="flex flex-row items-center justify-center gap-x-2"
-                key={index}
-              >
-                <Checkbox
-                  id={`ref-${index}`}
-                  className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                  checked={searchRefs.includes(ref)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSearchRefs((prevRefs) => [...prevRefs, ref]);
-                    } else {
-                      setSearchRefs((prevRefs) =>
-                        prevRefs.filter((r) => r.id !== ref.id),
-                      );
-                    }
-                  }}
-                />
-                <div>
-                  <label
-                    htmlFor={`ref-${index}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {ref.title}
-                  </label>
+          <ScrollArea>
+            <div className="grid w-full grid-cols-2">
+              {job?.references.map((ref, index) => (
+                <div
+                  className="flex flex-row items-center justify-center gap-x-2"
+                  key={index}
+                >
+                  <Checkbox
+                    id={`ref-${index}`}
+                    className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                    checked={searchRefs.includes(ref)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSearchRefs((prevRefs) => [...prevRefs, ref]);
+                      } else {
+                        setSearchRefs((prevRefs) =>
+                          prevRefs.filter((r) => r.id !== ref.id),
+                        );
+                      }
+                    }}
+                  />
+                  <div>
+                    <label
+                      htmlFor={`ref-${index}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {ref.title}
+                    </label>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
           {/* Search Bar */}
           <div className="flex w-full max-w-3xl flex-row items-center justify-center gap-x-4 pt-2">
-            <Button onClick={toggleAll}>Toggle All Refs</Button>
+            <Button onClick={toggleAll}>Toggle All</Button>
             <Input
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter a feature to search for"
+              placeholder="Enter something to search for"
             />
             {searchRefs.length === 0 || query.length === 0 ? (
               <HoverCard>
@@ -239,6 +276,7 @@ export default function JobDisplay({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+      <div className="w-48"></div>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function Dashboard() {
             <div key={index}>
               <Link
                 className={buttonVariants({ variant: "ghost" })}
-                href={`/dashboard/${job.id}`}
+                href={`/collections/${job.id}`}
               >
                 Job {job.id} - {job.createdAt.toLocaleDateString()}
               </Link>

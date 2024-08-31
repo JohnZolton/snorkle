@@ -55,6 +55,7 @@ model Analysis {
     conclusion String
     quote String
     refPage Int
+    refContent String
     refId Int
     refTitle String
 }

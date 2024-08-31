@@ -45,7 +45,7 @@ export const jobRouter = createTRPCRouter({
       });
     }),
 
-  analyzeFeature: publicProcedure
+  deepSearch: publicProcedure
     .input(
       z.object({
         jobId: z.string(),
@@ -109,15 +109,15 @@ export const jobRouter = createTRPCRouter({
       const results = [];
       for (const ref of input.references) {
         for (const page of ref.pages) {
-          const message = `You are a stellar patent attorney. Analyze whether the following text discloses or suggests a given feature. Be conservative, if something is borderline, answer yes. you are flagging text for attorney review.
+          const message = `You are a document analyst. Analyze whether the following text is relevant to a given user query. Be conservative, if something is borderline, answer yes. you are flagging text for manual review.
             INSTRUCTIONS: return an answer, yes or no, in <answer></answer> tags.
             If the answer is yes, also include a short quote in <quote></quote> tags
             -------------------
           TEXT: ${page.content}
           -------------------------------------
-          FEATURE: ${input.feature}
+          QUERY: ${input.feature}
           -------------------------------------
-          Is the feature disclosed or suggested by the above text? 
+          Is the above text relevant to the query? 
           `;
           const pageAnalysis = await getCompletion(message);
           let answer = "";
@@ -136,6 +136,7 @@ export const jobRouter = createTRPCRouter({
                 conclusion: answer,
                 quote: quote,
                 refPage: page.pageNum,
+                refContent: page.content,
                 refId: ref.id,
                 refTitle: ref.title,
               },

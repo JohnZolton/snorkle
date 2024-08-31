@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Cloud, Delete } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { pdfjs } from "react-pdf";
+import { LoadingSpinner } from "../_components/loader";
 //import "pdfjs-dist/webpack";
 
 interface Reference {
@@ -80,20 +81,25 @@ export default function Page() {
 
   const router = useRouter();
   const createJob = api.job.createJob.useMutation({
-    onSuccess: (job) => router.push(`/dashboard/${job.id}`),
+    onSuccess: (job) => router.push(`/collections/${job.id}`),
   });
 
   function handleMakeAnalysis() {
     if (refs.length > 0) {
+      setIsLoading(true);
       createJob.mutate({ references: refs });
     }
   }
 
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-start">
       <div className="container flex w-full flex-col items-center gap-4 px-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">NEW ANALYSIS</h1>
-        <h1 className="text-2xl tracking-tight">Upload All References</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          NEW COLLECTION
+        </h1>
+        <h1 className="text-2xl tracking-tight">Upload All Documents</h1>
         <h1 className="tracking-tight">As PDFs with recognized text</h1>
         <Dropzone
           multiple={true}
@@ -114,7 +120,7 @@ export default function Page() {
                   className="flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-[var(--radius)] hover:bg-[hsl(var(--accent))/0.25]"
                 >
                   <div className="flex flex-col items-center justify-center pt-2 text-[hsl(var(--foreground))]">
-                    Upload All References
+                    Upload All Documents
                   </div>
                   <div className="text-[hsl(var(--foreground))]">
                     <Cloud className="h-8 w-8" />
@@ -136,9 +142,12 @@ export default function Page() {
         </Dropzone>
         {files.length > 0 && (
           <div>
-            <Button disabled={refs.length === 0} onClick={handleMakeAnalysis}>
-              Create Analysis
-            </Button>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && (
+              <Button disabled={refs.length === 0} onClick={handleMakeAnalysis}>
+                Create Analysis
+              </Button>
+            )}
           </div>
         )}
         <div>
