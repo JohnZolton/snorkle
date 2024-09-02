@@ -1,30 +1,57 @@
-# Create T3 App
+# Snorkle
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+**Snorkle** is a 100% local, private document search tool. It enables you to run deep, private searches across hundreds of pages per minute to get relevant context for your queries. Snorkle can run on any backend LLM server, using [text-gen-webui](https://github.com/oobabooga/text-generation-webui) by default.
 
-## What's next? How do I make an app with this?
+Snorkle is a fork of [Patense.local](https://github.com/JohnZolton/patense-local.git), a document analysis tool for patent attorneys, with a modified system prompt for general searching.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+It basically breaks your references up into pages, passes each page to an LLM with the query, and asks if the content is relevant to the query. If it's relevant, it displays a short quote with a link to the full page.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Features
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- **Privacy First**: Run the tool entirely on your local machine, ensuring full control over your data.
+- **High Performance**: Search and analyze large documents quickly and efficiently.
+- **Flexible Backend**: While text-gen-webui is the default, Patense.local can work with any backend LLM server.
 
-## Learn More
+## Requirements
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- [text-gen-webui](https://github.com/oobabooga/text-generation-webui) (installation is outside the scope of this guide).
+- **Node.js** and **npm** (These are necessary to run the application. If you're unfamiliar with installing them, it might be easier to use Patense.ai).
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Installation
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+1. **Clone the Repository**
 
-## How do I deploy this?
+   ```bash
+   git clone https://github.com/JohnZolton/snorkle.git
+   cd patense.local
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
-# snorkle
+2. **Install Dependencies**
+   ```bash
+   npm install
+
+3. **Configure the Backend**
+   
+    Start your backend LLM server in api mode
+
+   in your text-gen-webui folder (or other backend) run:
+   ```bash
+   Linux
+   ./start_linux.sh --listen --api
+   
+   Windows
+   ./start_windows.bat --listen --api
+
+   Mac
+   ./start_macos.sh --listen --api
+
+  In text-gen-webui, select and load your model (8B tier is quite fast, at about 0.5-1 second per page on a 3090)
+
+4. Run the Application
+   in the /snorkle folder, run:
+   ```bash
+   npm start
+5. Naviage to http://localhost:3000
+
+## Usage
+
+Once the application is running, you can begin uploading documents and performing searches.
