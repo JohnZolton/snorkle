@@ -6,6 +6,8 @@ Snorkle is a fork of [Patense.local](https://github.com/JohnZolton/patense-local
 
 It basically breaks your references up into pages, passes each page to an LLM with the query, and asks if the content is relevant to the query. If it's relevant, it displays a short quote with a link to the full page.
 
+![Demo](./snorkle.gif)
+
 ## Features
 
 - **Privacy First**: Run the tool entirely on your local machine, ensuring full control over your data.
