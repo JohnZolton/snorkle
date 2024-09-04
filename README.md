@@ -51,8 +51,12 @@ It basically breaks your references up into pages, passes each page to an LLM wi
 4. Run the Application
    in the /snorkle folder, run:
    ```bash
+   npm run db:push
+5. Run the Application
+   in the /snorkle folder, run:
+   ```bash
    npm run dev
-5. Naviage to http://localhost:3000
+6. Naviage to http://localhost:3000
 
 ## Usage
 
