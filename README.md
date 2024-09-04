@@ -30,6 +30,10 @@ It basically breaks your references up into pages, passes each page to an LLM wi
 2. **Install Dependencies**
    ```bash
    npm install
+   ```
+
+   2.1 Rename .env.example to .env
+
 
 3. **Configure the Backend**
    
