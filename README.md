@@ -48,7 +48,7 @@ It basically breaks your references up into pages, passes each page to an LLM wi
 
   In text-gen-webui, select and load your model (8B tier is quite fast, at about 0.5-1 second per page on a 3090)
 
-4. Run the Application
+4. Initialize the database
    in the /snorkle folder, run:
    ```bash
    npm run db:push
