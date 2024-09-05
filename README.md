@@ -25,7 +25,7 @@ It basically breaks your references up into pages, passes each page to an LLM wi
 
    ```bash
    git clone https://github.com/JohnZolton/snorkle.git
-   cd patense.local
+   cd snorkle
 
 2. **Install Dependencies**
    ```bash
