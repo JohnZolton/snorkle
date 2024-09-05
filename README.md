@@ -12,12 +12,12 @@ It basically breaks your references up into pages, passes each page to an LLM wi
 
 - **Privacy First**: Run the tool entirely on your local machine, ensuring full control over your data.
 - **High Performance**: Search and analyze large documents quickly and efficiently.
-- **Flexible Backend**: While text-gen-webui is the default, Patense.local can work with any backend LLM server.
+- **Flexible Backend**: While `text-gen-webui` is the default, Snorkle.local can work with any backend LLM server.
 
 ## Requirements
 
 - [text-gen-webui](https://github.com/oobabooga/text-generation-webui) (installation is outside the scope of this guide).
-- **Node.js** and **npm** (These are necessary to run the application. If you're unfamiliar with installing them, it might be easier to use Patense.ai).
+- **Node.js** and **npm** (These are necessary to run the application. If you're unfamiliar with installing them, it might be easier to use [Patense.ai](https://patense.ai)).
 
 ## Installation
 
@@ -50,7 +50,7 @@ It basically breaks your references up into pages, passes each page to an LLM wi
    Mac
    ./start_macos.sh --listen --api
 
-  In text-gen-webui, select and load your model (8B tier is quite fast, at about 0.5-1 second per page on a 3090)
+  In `text-gen-webui`, select and load your model (8B tier is quite fast, at about 0.5-1 second per page on a 3090)
 
 4. Initialize the database
    in the /snorkle folder, run:
